@@ -2,7 +2,8 @@ import { connection } from "./rtc.js";
 
 await notify("capture");
 const video = document.querySelector("video");
-video.addEventListener("canplay", async () => {
+async function start() {
+  video.removeEventListener("canplay", start);
   await notify("canplay");
   const stream = video.captureStream();
   stream.getTracks().forEach((track) => connection.addTrack(track, stream));
@@ -17,4 +18,5 @@ video.addEventListener("canplay", async () => {
     type: "answer",
     sdp,
   });
-});
+}
+video.addEventListener("canplay", start);

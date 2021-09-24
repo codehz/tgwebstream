@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "module": "esnext",
+    "target": "esnext",
+    "outDir": "lib",
+    "moduleResolution": "Node",
+    "allowSyntheticDefaultImports": true
+  }
+}

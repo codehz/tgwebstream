@@ -1,41 +1,37 @@
-import { create } from "./browser.js";
-import ExitGroup from "./exit-group.js";
-import getVoiceChatSession from "./voicechat.js";
+import { NewMessage, NewMessageEvent } from "telegram/events/index.js";
+import client from "./client.js";
+import { playYoutube } from "./player.js";
+import { getVoiceChatSession } from "./voicechat.js";
 
-// client
-// https://www.youtube.com/watch?v=BbhrHRsK1S4
-// GKSRyLdjsPA
+const ytb =
+  /^(?:https?:\/\/)?(?:www\.|m\.)?youtu\.?be(?:\.com)?\/?.*(?:watch|embed)?(?:.*v=|v\/|\/)([\w\-_]+)\&?/;
 
-const group = new ExitGroup();
-const page = await create();
-group.add(page);
-await page.exposeFunction("notify", async (event: string) => {
-  console.log(event);
-  switch (event) {
-    case "closed":
-      await page.close();
-      break;
+client.addEventHandler(async (e: NewMessageEvent) => {
+  const msg = e.message;
+  await msg.delete({});
+  const text = msg.message;
+  const link = /^stream (.*)/.exec(text)[1];
+  const ytbm = link.match(ytb);
+  if (ytbm) {
+    try {
+      await playYoutube(e.chatId, ytbm[1]);
+    } catch (e) {
+      console.log(e);
+    }
   }
-});
-await page.exposeFunction("joinVoiceChat", async (sdp: string) => {
-  const session = await getVoiceChatSession(-1001234211532);
-  group.add(session);
-  return session.join(sdp);
-});
-await page.exposeFunction("getVideoTask", () => "3jIXsIcov1A");
-page.on("framenavigated", async (frame) => {
-  if (new URL(frame.url()).hostname != "www.youtube.com") return;
-  try {
-    await frame.waitForSelector("video");
-    await frame.addScriptTag({
-      url: "https://data/capture.mjs",
-      type: "module",
-    });
-  } catch (e) {
-    console.error(e);
-    await page.close();
-  }
-});
-await page.goto("https://data/index.html", {
-  waitUntil: "domcontentloaded",
+}, new NewMessage({ outgoing: true, forwards: false, pattern: /^stream .*/ }));
+
+client.addEventHandler(
+  async (e: NewMessageEvent) => {
+    const msg = e.message;
+    await msg.delete({});
+    const call = await getVoiceChatSession(e.chatId);
+    if (!call) return console.log("no active voice chat session");
+    await call.close();
+  },
+  new NewMessage({ outgoing: true, forwards: false, pattern: /^stopstream$/ }),
+);
+
+process.on("uncaughtException", function (err) {
+  console.log(err);
 });

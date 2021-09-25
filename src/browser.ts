@@ -4,14 +4,14 @@ import { fileURLToPath } from "url";
 import mime from "mime";
 import { readFile } from "fs";
 import adblock, { Rules } from "./adblocker.js";
-
-// puppeteer.defau
+import { logRequest } from "./db.js";
 
 const browser = await puppeteer.launch({
-  // headless: false,
+  // devtools: true,
   defaultViewport: {
     width: 1280,
     height: 720,
+    isMobile: true,
   },
   args: [
     "--disable-web-security",
@@ -31,6 +31,7 @@ const base = path.join(fileURLToPath(import.meta.url), "../../web/");
 
 const rules: Rules = {
   "*.doubleclick.net": [],
+  "*.googlesyndication.com": [],
   "www.youtube.com": [
     "/youtubei/v1/player/ad_break",
     "/youtubei/v1/log_event*",
@@ -38,6 +39,7 @@ const rules: Rules = {
     "/api/stats/*",
     "/ad*",
     "/pagead*",
+    "/sw*",
   ],
 };
 
@@ -48,9 +50,10 @@ export async function create() {
     await page.setRequestInterception(true);
     page.on("request", (req) => {
       const url = new URL(req.url());
-
+      let result = 0;
       if (adblock(rules, url)) {
         req.abort();
+        result = 1;
       } else if (url.hostname == "data") {
         const file = path.join(base, url.pathname);
         const contentType = mime.getType(file);
@@ -67,9 +70,11 @@ export async function create() {
             });
           }
         });
+        result = 2;
       } else {
         req.continue();
       }
+      logRequest.run(req.resourceType(), url + "", result);
     });
     return page;
   } catch (e) {

@@ -6,8 +6,11 @@ const player = new YouTubePlayer(document.body, {
   modestBranding: false,
   related: false,
 });
-player.on("cued", () => {
+player.setPlaybackQuality("hd720");
+player.on("error", (e) => notify("error", "" + e));
+player.on("unplayable", () => notify("error", "video is unplayable"));
+player.on("ended", () => notify("ended"));
+player.once("cued", () => {
   player.play();
-  notify("cued");
 });
 player.load(await getVideoTask());

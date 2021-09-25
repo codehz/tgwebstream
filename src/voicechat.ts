@@ -10,7 +10,6 @@ const ref = new Map<number, VoiceChatSession>();
 
 client.addEventHandler((update) => {
   if (update instanceof Api.UpdateGroupCall) {
-    console.log(update);
     if (update.call instanceof Api.GroupCallDiscarded) {
       const session = ref.get(update.chatId);
       session?.emit("close");
@@ -54,13 +53,19 @@ export class VoiceChatSession extends EventEmitter {
   }
 
   async close() {
+    this.emit("close");
     ref.delete(this.#chat.id);
     await leave(client, this.#call);
   }
 }
 
-export default async function getVoiceChatSession(entity: EntityLike) {
-  const chat = await getFull(client, entity);
+export async function allocVoiceChatSession(id: number) {
+  const chat = await getFull(client, id);
   if (!chat) throw new ReferenceError("invalid chat");
   return new VoiceChatSession(chat);
+}
+
+export async function getVoiceChatSession(id: number) {
+  const chat = await getFull(client, id);
+  return ref.get(chat.id);
 }

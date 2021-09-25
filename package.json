@@ -7,14 +7,15 @@
     "watch": "tsc -w"
   },
   "dependencies": {
+    "better-sqlite3": "^7.4.3",
     "dotenv": "^10.0.0",
     "micromatch": "^4.0.4",
     "mime": "^2.5.2",
     "puppeteer": "^10.4.0",
-    "telegram": "^1.9.4",
-    "yt-player": "^3.5.0"
+    "telegram": "^1.9.4"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.4.0",
     "@types/micromatch": "^4.0.2",
     "@types/mime": "^2.0.3",
     "@types/node": "^16.9.6",

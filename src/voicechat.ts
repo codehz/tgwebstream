@@ -26,8 +26,9 @@ export class VoiceChatSession extends EventEmitter {
   constructor(chat: Api.TypeChatFull) {
     super();
     this.#chat = chat;
-    if (ref.has(this.#chat.id)) {
-      throw new ReferenceError("already has joined chat session");
+    const old = ref.get(this.#chat.id);
+    if (old) {
+      old.close();
     }
     if (!this.#call) throw new ReferenceError("no active call");
     ref.set(this.#chat.id, this);

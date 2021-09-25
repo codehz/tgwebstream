@@ -1,14 +1,14 @@
 import { create } from "./browser.js";
-import { join } from "./calls.js";
-import { getFull } from "./chats.js";
-import client from "./client.js";
-import { fromConference, parseSdp } from "./sdp.js";
+import ExitGroup from "./exit-group.js";
+import getVoiceChatSession from "./voicechat.js";
 
 // client
 // https://www.youtube.com/watch?v=BbhrHRsK1S4
 // GKSRyLdjsPA
 
+const group = new ExitGroup();
 const page = await create();
+group.add(page);
 await page.exposeFunction("notify", async (event: string) => {
   console.log(event);
   switch (event) {
@@ -18,20 +18,11 @@ await page.exposeFunction("notify", async (event: string) => {
   }
 });
 await page.exposeFunction("joinVoiceChat", async (sdp: string) => {
-  const parsed = parseSdp(sdp);
-  console.log(parsed);
-  const chat = await getFull(client, -1001234211532);
-  const { transport } = await join(client, chat.call, {
-    ...parsed,
-    setup: "active",
-  });
-  return fromConference({
-    sessionId: Date.now(),
-    transport,
-    ssrcs: [{ ssrc: parsed.source, ssrcGroup: parsed.sourceGroup }],
-  });
+  const session = await getVoiceChatSession(-1001234211532);
+  group.add(session);
+  return session.join(sdp);
 });
-await page.exposeFunction("getVideoTask", () => "GKSRyLdjsPA");
+await page.exposeFunction("getVideoTask", () => "3jIXsIcov1A");
 page.on("framenavigated", async (frame) => {
   if (new URL(frame.url()).hostname != "www.youtube.com") return;
   try {

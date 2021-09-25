@@ -14,6 +14,7 @@ client.addEventHandler(async (e: NewMessageEvent) => {
   const ytbm = link.match(ytb);
   if (ytbm) {
     try {
+      console.log("start play ", e.chatId, ytbm[1]);
       await playYoutube(e.chatId, ytbm[1]);
     } catch (e) {
       console.log(e);

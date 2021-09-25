@@ -9,7 +9,7 @@ export async function playYoutube(chatId: number, videoId: string) {
   const session = await allocVoiceChatSession(chatId);
   group.add(session);
   await page.exposeFunction("notify", async (event: string, details?: any) => {
-    console.log(event);
+    console.log(event, details);
     switch (event) {
       case "error":
         console.error("error", details);

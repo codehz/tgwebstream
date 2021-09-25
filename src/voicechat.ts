@@ -1,6 +1,5 @@
 import { EventEmitter } from "events";
 import { Api } from "telegram";
-import { EntityLike } from "telegram/define";
 import { join, leave } from "./calls.js";
 import { getFull } from "./chats.js";
 import client from "./client.js";
